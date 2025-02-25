@@ -3,7 +3,12 @@ package com.baond.easybank.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -24,5 +29,27 @@ public class ProjectSecurityConfig {
 //        http.formLogin(AbstractHttpConfigurer::disable);
 //        http.httpBasic(AbstractHttpConfigurer::disable);
         return http.build();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        /*only using {noop} if you don't have a password encoder*/
+        /*UserDetails user = User.withUsername("user").password("{noop}12345").authorities("read").build();*/
+        UserDetails noop = User.withUsername("noop").password("{noop}12345").authorities("read").build();
+
+        /*bcrypt*/
+//        UserDetails user = User.withUsername("user").password("12345").authorities("read").build();
+//        UserDetails admin = User.withUsername("admin").password("{bcrypt}12345").authorities("admin").build();
+        /*encrypted = plaintext*/
+        UserDetails encrypted = User.withUsername("encrypted").password("{bcrypt}$2a$12$FIZc69GRDkqb3N/12F6ZrO7fAPCXkUN3EsWzQ0Jtsc5VqFgoJef72").authorities("admin").build();
+
+        /*MD4*/
+//        UserDetails md4 = User.withUsername("md4").password("{MD4}12345").authorities("admin").build();
+        return new InMemoryUserDetailsManager(noop, encrypted );
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }
